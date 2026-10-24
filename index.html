@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gosidian</title>
+  <link rel="icon" type="image/png" href="/assets/icon.png" />
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body class="theme-obsidian">
+  <div id="app" class="app-root">
+    <!-- Top Bar / Titlebar -->
+    <header class="titlebar">
+      <div class="titlebar-left">
+        <div class="app-brand" title="Gosidian - Obsidian clone in MyGo">
+          <img src="/assets/icon.png" class="brand-icon" alt="Gosidian" />
+          <span class="brand-name">Gosidian</span>
+        </div>
+        <div class="vault-dropdown" id="vaultDropdownBtn" title="Switch or inspect current vault">
+          <i data-lucide="folder-git-2" class="icon-sm"></i>
+          <span id="vaultNameDisplay">gosidian</span>
+          <i data-lucide="chevron-down" class="icon-xs"></i>
+        </div>
+      </div>
+
+      <div class="titlebar-center">
+        <div class="nav-history">
+          <button id="navBackBtn" class="nav-btn" title="Navigate back (Alt+Left)" disabled>
+            <i data-lucide="arrow-left" class="icon-sm"></i>
+          </button>
+          <button id="navForwardBtn" class="nav-btn" title="Navigate forward (Alt+Right)" disabled>
+            <i data-lucide="arrow-right" class="icon-sm"></i>
+          </button>
+        </div>
+        <div class="quick-switcher-pill" id="quickSwitcherTrigger" title="Quick Switcher (Ctrl+O)">
+          <i data-lucide="search" class="icon-xs"></i>
+          <span class="switcher-prompt">Open note...</span>
+          <kbd class="shortcut-badge">Ctrl O</kbd>
+        </div>
+      </div>
+
+      <div class="titlebar-right">
+        <button id="cmdPaletteTrigger" class="titlebar-btn" title="Command Palette (Ctrl+P)">
+          <i data-lucide="command" class="icon-sm"></i>
+          <kbd class="shortcut-badge">Ctrl P</kbd>
+        </button>
+        <button id="toggleRightSidebarBtn" class="titlebar-btn" title="Toggle right sidebar">
+          <i data-lucide="panel-right" class="icon-sm"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Workspace Container -->
+    <div class="workspace-main">
+      <!-- Left Ribbon Bar -->
+      <nav class="left-ribbon" aria-label="Ribbon">
+        <div class="ribbon-top">
+          <button id="ribbonToggleSidebar" class="ribbon-btn active" title="Toggle left sidebar (Ctrl+B)">
+            <i data-lucide="panel-left"></i>
+          </button>
+          <button id="ribbonQuickSwitcher" class="ribbon-btn" title="Quick Switcher (Ctrl+O)">
+            <i data-lucide="search"></i>
+          </button>
+          <button id="ribbonGraphView" class="ribbon-btn" title="Open Graph View (Ctrl+G)">
+            <i data-lucide="git-fork"></i>
+          </button>
+          <button id="ribbonCanvas" class="ribbon-btn" title="Canvas View">
+            <i data-lucide="layout-dashboard"></i>
+          </button>
+          <button id="ribbonNewNote" class="ribbon-btn" title="New Note (Ctrl+N)">
+            <i data-lucide="file-plus-2"></i>
+          </button>
+          <button id="ribbonDailyNote" class="ribbon-btn" title="Open today's daily note">
+            <i data-lucide="calendar"></i>
+          </button>
+          <button id="ribbonTemplate" class="ribbon-btn" title="Insert template">
+            <i data-lucide="copy-plus"></i>
+          </button>
+          <button id="ribbonCmdPalette" class="ribbon-btn" title="Command Palette (Ctrl+P)">
+            <i data-lucide="terminal"></i>
+          </button>
+        </div>
+        <div class="ribbon-bottom">
+          <button id="ribbonSwitchVault" class="ribbon-btn" title="Open another vault">
+            <i data-lucide="folder-sync"></i>
+          </button>
+          <button id="ribbonHelpBtn" class="ribbon-btn" title="Help & Markdown syntax">
+            <i data-lucide="help-circle"></i>
+          </button>
+          <button id="ribbonSettingsBtn" class="ribbon-btn" title="Settings">
+            <i data-lucide="settings"></i>
+          </button>
+        </div>
+      </nav>
+
+      <!-- Left Sidebar -->
+      <aside class="sidebar-left" id="sidebarLeft">
+        <div class="sidebar-header">
+          <div class="sidebar-tabs">
+            <button class="sidebar-tab active" data-tab="files" title="File Explorer">
+              <i data-lucide="folder"></i>
+            </button>
+            <button class="sidebar-tab" data-tab="search" title="Search Vault">
+              <i data-lucide="search"></i>
+            </button>
+            <button class="sidebar-tab" data-tab="bookmarks" title="Bookmarks">
+              <i data-lucide="bookmark"></i>
+            </button>
+            <button class="sidebar-tab" data-tab="tags" title="Tags">
+              <i data-lucide="tag"></i>
+            </button>
+          </div>
+          <div class="sidebar-actions" id="filesActions">
+            <button id="actionNewNote" class="action-btn" title="New Note">
+              <i data-lucide="file-plus" class="icon-xs"></i>
+            </button>
+            <button id="actionNewFolder" class="action-btn" title="New Folder">
+              <i data-lucide="folder-plus" class="icon-xs"></i>
+            </button>
+            <button id="actionChangeSort" class="action-btn" title="Change sort order">
+              <i data-lucide="arrow-up-down" class="icon-xs"></i>
+            </button>
+            <button id="actionCollapseAll" class="action-btn" title="Collapse all folders">
+              <i data-lucide="chevrons-up-down" class="icon-xs"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="sidebar-content">
+          <!-- Files Panel -->
+          <div class="sidebar-panel active" id="panelFiles">
+            <div class="vault-root-label">
+              <span id="vaultRootName">gosidian</span>
+            </div>
+            <div id="fileTreeContainer" class="file-tree">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <!-- Search Panel -->
+          <div class="sidebar-panel" id="panelSearch">
+            <div class="search-input-wrapper">
+              <i data-lucide="search" class="icon-xs search-icon"></i>
+              <input type="text" id="vaultSearchInput" placeholder="Search notes..." />
+              <button id="clearSearchBtn" class="clear-search-btn" style="display:none">
+                <i data-lucide="x" class="icon-xs"></i>
+              </button>
+            </div>
+            <div class="search-options">
+              <label class="toggle-option">
+                <input type="checkbox" id="searchCaseSensitive" /> Match Case
+              </label>
+            </div>
+            <div id="searchResultsCount" class="results-count"></div>
+            <div id="searchResultsContainer" class="search-results-list"></div>
+          </div>
+
+          <!-- Bookmarks Panel -->
+          <div class="sidebar-panel" id="panelBookmarks">
+            <div class="panel-section-title">Bookmarked Notes</div>
+            <div id="bookmarksList" class="bookmarks-list">
+              <div class="empty-hint">Click the bookmark icon in any note header to pin it here.</div>
+            </div>
+          </div>
+
+          <!-- Tags Panel -->
+          <div class="sidebar-panel" id="panelTags">
+            <div class="panel-section-title">All Tags in Vault</div>
+            <div id="tagsList" class="tags-cloud"></div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Drag Splitter Handle (Left) -->
+      <div class="split-handle" id="splitHandleLeft" title="Drag to resize sidebar"></div>
+
+      <!-- Center Workspace (Tabs & Active Note / Graph) -->
+      <main class="workspace-center">
+        <!-- Tabs Bar -->
+        <div class="tabs-bar">
+          <div class="tabs-scroll" id="tabsContainer">
+            <!-- Dynamically populated tabs -->
+          </div>
+          <button id="newTabBtn" class="tab-btn-add" title="New Tab">
+            <i data-lucide="plus" class="icon-xs"></i>
+          </button>
+          <div class="tabs-actions">
+            <!-- Mode Switcher: Live Preview / Reading View / Split View -->
+            <div class="view-mode-group" title="Switch editor view mode">
+              <button id="modeLivePreview" class="mode-btn active" title="Live Preview">
+                <i data-lucide="edit-3" class="icon-xs"></i>
+                <span>Live</span>
+              </button>
+              <button id="modeReading" class="mode-btn" title="Reading View">
+                <i data-lucide="book-open" class="icon-xs"></i>
+                <span>Reading</span>
+              </button>
+              <button id="modeSplit" class="mode-btn" title="Side-by-side Split View">
+                <i data-lucide="columns-2" class="icon-xs"></i>
+                <span>Split</span>
+              </button>
+            </div>
+
+            <button id="toggleGraphViewBtn" class="action-btn" title="Toggle Graph View for this note">
+              <i data-lucide="git-fork" class="icon-xs"></i>
+            </button>
+            <button id="bookmarkCurrentBtn" class="action-btn" title="Bookmark this note">
+              <i data-lucide="bookmark" class="icon-xs"></i>
+            </button>
+            <button id="moreActionsBtn" class="action-btn" title="More options">
+              <i data-lucide="more-horizontal" class="icon-xs"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Note Viewport / Canvas Container -->
+        <div class="viewport-container" id="viewportContainer">
+          <!-- Active Document View -->
+          <div class="document-view" id="documentView">
+            <!-- Document Header -->
+            <div class="document-header">
+              <div class="document-path" id="documentPathDisplay">Welcome to Gosidian.md</div>
+              <input type="text" id="documentTitleInput" class="document-title-input" placeholder="Untitled Note" />
+            </div>
+
+            <!-- Content Area: Live Preview / Split Mode / Reading View -->
+            <div class="editor-workspace" id="editorWorkspace">
+              <!-- Live / Source Editor Container -->
+              <div class="editor-pane" id="editorPane">
+                <textarea id="markdownEditor" class="markdown-textarea" placeholder="Start typing note... Use [[Note Name]] to link other notes, #tags, checklists, callouts..."></textarea>
+              </div>
+
+              <!-- Draggable Split Resizer in Split View -->
+              <div class="split-handle editor-split-handle" id="editorSplitResizer" title="Drag to adjust split ratio (Double-click to reset 50/50)"></div>
+
+              <!-- Synchronized Live Preview / Reading Pane -->
+              <div class="preview-pane" id="previewPane">
+                <div id="previewContent" class="markdown-rendered"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Full Graph View (When graph view tab is active) -->
+          <div class="graph-view-container" id="graphViewContainer" style="display:none">
+            <div class="graph-toolbar">
+              <div class="graph-title">
+                <i data-lucide="git-fork" class="icon-sm"></i>
+                <span>Interactive Knowledge Graph</span>
+              </div>
+              <div class="graph-controls">
+                <input type="text" id="graphFilterInput" placeholder="Filter graph notes or #tags..." class="graph-search" />
+                <button id="graphToggleSettingsBtn" class="graph-btn active" title="Toggle Graph Settings Panel">
+                  <i data-lucide="sliders-horizontal" class="icon-xs"></i>
+                </button>
+                <button id="graphResetZoomBtn" class="graph-btn" title="Reset Camera">
+                  <i data-lucide="maximize" class="icon-xs"></i>
+                </button>
+                <button id="graphTogglePhysicsBtn" class="graph-btn active" title="Toggle Physics Simulation">
+                  <i data-lucide="activity" class="icon-xs"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Obsidian Graph Settings Panel -->
+            <div class="graph-settings-panel" id="graphSettingsPanel">
+              <div class="settings-box-title">
+                <span>Graph Settings</span>
+                <button id="closeGraphSettings" class="close-panel-btn"><i data-lucide="x" class="icon-xs"></i></button>
+              </div>
+              <div class="setting-group">
+                <span class="group-title">FORCES</span>
+                <div class="slider-row">
+                  <label>Repel Force</label>
+                  <input type="range" id="sliderRepel" min="200" max="2000" step="50" value="800" />
+                </div>
+                <div class="slider-row">
+                  <label>Link Distance</label>
+                  <input type="range" id="sliderDistance" min="40" max="250" step="10" value="110" />
+                </div>
+                <div class="slider-row">
+                  <label>Center Force</label>
+                  <input type="range" id="sliderCenter" min="1" max="10" step="1" value="2" />
+                </div>
+              </div>
+              <div class="setting-group">
+                <span class="group-title">DISPLAY</span>
+                <div class="slider-row">
+                  <label>Node Size</label>
+                  <input type="range" id="sliderNodeScale" min="0.5" max="2.5" step="0.1" value="1.0" />
+                </div>
+                <div class="slider-row">
+                  <label>Link Thickness</label>
+                  <input type="range" id="sliderLinkThickness" min="0.5" max="3" step="0.2" value="1.0" />
+                </div>
+              </div>
+            </div>
+
+            <div class="canvas-wrapper">
+              <canvas id="graphCanvas"></canvas>
+              <div id="graphNodeTooltip" class="graph-tooltip" style="display:none"></div>
+              <div class="graph-stats-overlay" id="graphStatsOverlay">
+                Nodes: <span id="graphNodeCount">0</span> | Links: <span id="graphLinkCount">0</span>
+              </div>
+            </div>
+          </div>
+          <!-- Infinite 2D Spatial Canvas View (When .canvas file or canvas tab is active) -->
+          <div class="canvas-view-container" id="canvasViewContainer" style="display:none">
+            <div class="canvas-toolbar">
+              <div class="canvas-toolbar-left">
+                <i data-lucide="layout-grid" class="icon-sm"></i>
+                <span id="canvasTitleDisplay">My Ideas Board.canvas</span>
+              </div>
+              <div class="canvas-toolbar-right">
+                <button id="canvasAddCardBtn" class="graph-btn active" title="Add Card">
+                  <i data-lucide="plus" class="icon-xs"></i> <span>Card</span>
+                </button>
+                <button id="canvasZoomInBtn" class="graph-btn" title="Zoom In">
+                  <i data-lucide="zoom-in" class="icon-xs"></i>
+                </button>
+                <button id="canvasZoomOutBtn" class="graph-btn" title="Zoom Out">
+                  <i data-lucide="zoom-out" class="icon-xs"></i>
+                </button>
+                <button id="canvasResetZoomBtn" class="graph-btn" title="Reset View">
+                  <i data-lucide="maximize-2" class="icon-xs"></i>
+                </button>
+              </div>
+            </div>
+            <div id="spatialCanvasMount" class="spatial-canvas-mount"></div>
+          </div>
+
+        </div>
+      </main>
+
+      <!-- Drag Splitter Handle (Right) -->
+      <div class="split-handle" id="splitHandleRight" title="Drag to resize sidebar"></div>
+
+      <!-- Right Sidebar -->
+      <aside class="sidebar-right" id="sidebarRight">
+        <div class="sidebar-header">
+          <div class="sidebar-tabs">
+            <button class="sidebar-tab active" data-tab="backlinks" title="Backlinks">
+              <i data-lucide="link-2"></i>
+            </button>
+            <button class="sidebar-tab" data-tab="outgoing" title="Outgoing Links">
+              <i data-lucide="external-link"></i>
+            </button>
+            <button class="sidebar-tab" data-tab="outline" title="Document Outline">
+              <i data-lucide="list"></i>
+            </button>
+            <button class="sidebar-tab" data-tab="info" title="Note Metadata">
+              <i data-lucide="info"></i>
+            </button>
+          </div>
+          <div class="sidebar-actions">
+            <button class="action-btn" id="closeRightSidebarBtn" title="Collapse sidebar (Ctrl+Shift+B)">
+              <i data-lucide="chevrons-right" class="icon-xs"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="sidebar-content">
+          <!-- Backlinks Panel -->
+          <div class="sidebar-panel active" id="panelBacklinks">
+            <div class="panel-section-title">Linked Mentions</div>
+            <div id="backlinksList" class="links-list"></div>
+            <div class="panel-section-title" style="margin-top:16px;">Unlinked Mentions</div>
+            <div id="unlinkedMentionsList" class="links-list"></div>
+          </div>
+
+          <!-- Outgoing Links Panel -->
+          <div class="sidebar-panel" id="panelOutgoing">
+            <div class="panel-section-title">Links in this Note</div>
+            <div id="outgoingLinksList" class="links-list"></div>
+          </div>
+
+          <!-- Outline Panel -->
+          <div class="sidebar-panel" id="panelOutline">
+            <div class="panel-section-title">Table of Contents</div>
+            <div id="outlineList" class="outline-tree"></div>
+          </div>
+
+          <!-- File Info Panel -->
+          <div class="sidebar-panel" id="panelInfo">
+            <div class="panel-section-title">Note Details</div>
+            <div class="info-grid">
+              <div class="info-label">File Name</div>
+              <div class="info-value" id="infoFileName">-</div>
+              <div class="info-label">Path</div>
+              <div class="info-value" id="infoFilePath">-</div>
+              <div class="info-label">Words</div>
+              <div class="info-value" id="infoWordCount">0</div>
+              <div class="info-label">Characters</div>
+              <div class="info-value" id="infoCharCount">0</div>
+              <div class="info-label">Reading Time</div>
+              <div class="info-value" id="infoReadTime">0 min</div>
+              <div class="info-label">Last Modified</div>
+              <div class="info-value" id="infoLastMod">-</div>
+            </div>
+            <button id="openInExplorerBtn" class="btn btn-secondary full-width" style="margin-top:16px;">
+              <i data-lucide="folder-open" class="icon-xs"></i>
+              <span>Show in System Explorer</span>
+            </button>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- Status Bar (Bottom) -->
+    <footer class="status-bar">
+      <div class="status-left">
+        <span class="status-item" id="statusVaultIndicator">
+          <i data-lucide="folder-git-2" class="icon-xs"></i>
+          <span id="statusVaultText">Vault: gosidian</span>
+        </span>
+        <span class="status-item" id="statusBacklinksCount">
+          <i data-lucide="link-2" class="icon-xs"></i>
+          <span id="statusBacklinksText">0 backlinks</span>
+        </span>
+      </div>
+      <div class="status-center">
+        <span class="status-item" id="statusSaveIndicator">
+          <i data-lucide="check" class="icon-xs text-success"></i>
+          <span>Saved</span>
+        </span>
+      </div>
+      <div class="status-right">
+        <span class="status-item" id="statusCounts">0 words &nbsp;·&nbsp; 0 characters</span>
+        <span class="status-item status-pill" id="statusModePill">Live Preview</span>
+        <span class="status-item status-badge" title="Powered by pure Go desktop framework">MyGo 0.6.3</span>
+      </div>
+    </footer>
+
+    <!-- WikiLink Autocomplete Popup -->
+    <div id="wikilinkAutocomplete" class="wikilink-popup" style="display:none">
+      <div class="popup-header">Link to note</div>
+      <div id="autocompleteList" class="popup-list"></div>
+    </div>
+
+    <!-- Hover Preview Card for WikiLinks -->
+    <div id="hoverPreviewCard" class="hover-preview-card" style="display:none">
+      <div class="hover-preview-title" id="hoverPreviewTitle"></div>
+      <div class="hover-preview-body" id="hoverPreviewBody"></div>
+    </div>
+
+    <!-- Modals -->
+    <!-- Quick Switcher Modal (Ctrl+O) -->
+    <div class="modal-backdrop" id="quickSwitcherModal" style="display:none">
+      <div class="modal-card switcher-modal">
+        <div class="modal-search-box">
+          <i data-lucide="search" class="icon-sm"></i>
+          <input type="text" id="switcherInput" placeholder="Type a note name to open or create..." autofocus />
+        </div>
+        <div class="switcher-results" id="switcherResults"></div>
+        <div class="modal-footer-hints">
+          <span><kbd>↑</kbd> <kbd>↓</kbd> to navigate</span>
+          <span><kbd>Enter</kbd> to open</span>
+          <span><kbd>Esc</kbd> to dismiss</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Command Palette Modal (Ctrl+P) -->
+    <div class="modal-backdrop" id="cmdPaletteModal" style="display:none">
+      <div class="modal-card palette-modal">
+        <div class="modal-search-box">
+          <i data-lucide="command" class="icon-sm"></i>
+          <input type="text" id="paletteInput" placeholder="Type a command..." autofocus />
+        </div>
+        <div class="palette-results" id="paletteResults"></div>
+        <div class="modal-footer-hints">
+          <span><kbd>↑</kbd> <kbd>↓</kbd> to navigate</span>
+          <span><kbd>Enter</kbd> to execute</span>
+          <span><kbd>Esc</kbd> to dismiss</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal-backdrop" id="settingsModal" style="display:none">
+      <div class="modal-card settings-modal">
+        <div class="settings-sidebar">
+          <div class="settings-search-wrapper">
+            <i data-lucide="search" class="icon-xs"></i>
+            <input type="text" id="settingsSearchInput" placeholder="Search options..." />
+          </div>
+          <div class="settings-title">Options</div>
+          <div class="settings-nav-item active" data-section="general">General</div>
+          <div class="settings-nav-item" data-section="appearance">Appearance</div>
+          <div class="settings-nav-item" data-section="editor">Editor</div>
+          <div class="settings-nav-item" data-section="files">Files and links</div>
+          <div class="settings-nav-item" data-section="graph">Graph view</div>
+          <div class="settings-nav-item" data-section="hotkeys">Hotkeys</div>
+          <div class="settings-title" style="margin-top:10px;">About</div>
+          <div class="settings-nav-item" data-section="about">About Gosidian</div>
+        </div>
+        <div class="settings-content">
+          <div class="settings-header">
+            <h2 id="settingsSectionTitle">General</h2>
+            <button id="closeSettingsBtn" class="close-btn"><i data-lucide="x"></i></button>
+          </div>
+          <div class="settings-body" id="settingsSectionBody">
+            <!-- Dynamically populated per section -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- File Recovery / Version History Modal -->
+    <div class="modal-backdrop" id="fileRecoveryModal" style="display:none">
+      <div class="modal-card recovery-modal-card">
+        <div class="modal-header">
+          <div class="modal-title">
+            <i data-lucide="history" class="icon-sm"></i>
+            <span id="recoveryFileHeader">File Recovery & Snapshots</span>
+          </div>
+          <button id="closeRecoveryBtn" class="close-btn"><i data-lucide="x"></i></button>
+        </div>
+        <div class="recovery-body">
+          <div class="recovery-sidebar">
+            <div class="recovery-sidebar-title">Historical Snapshots</div>
+            <div id="recoverySnapshotsList" class="recovery-list"></div>
+          </div>
+          <div class="recovery-preview">
+            <div class="recovery-preview-header">
+              <span id="recoverySnapshotTime">Select a snapshot to preview</span>
+              <button id="recoveryRestoreBtn" class="btn btn-primary" style="display:none">Restore This Version</button>
+            </div>
+            <textarea id="recoveryPreviewText" class="recovery-preview-textarea" readonly></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vault Chooser / First-Run Welcome Modal -->
+    <div class="modal-backdrop" id="vaultChooserModal" style="display:none">
+      <div class="modal-card vault-chooser-modal">
+        <div class="vault-chooser-header">
+          <img src="/assets/icon.png" class="vault-chooser-icon" alt="Gosidian" />
+          <h1 class="vault-chooser-title">Welcome to Gosidian</h1>
+          <p class="vault-chooser-subtitle">Your personal knowledge base, stored locally and running at the speed of Go.</p>
+        </div>
+        <div class="vault-chooser-cards">
+          <!-- Card 1: Default Vault -->
+          <div class="vault-choice-card active" id="cardDefaultVault">
+            <div class="card-icon-box">
+              <i data-lucide="folder-check" class="icon-md"></i>
+            </div>
+            <div class="card-content">
+              <h3>Default Vault (Recommended)</h3>
+              <p>Store notes in the standard documents folder</p>
+              <div class="card-path-preview" id="defaultVaultPathPreview">Documents/Gosidian Vault</div>
+            </div>
+            <button id="btnChooseDefaultVault" class="btn btn-primary">Open Default</button>
+          </div>
+
+          <!-- Card 2: Open Existing Folder -->
+          <div class="vault-choice-card" id="cardOpenFolder">
+            <div class="card-icon-box">
+              <i data-lucide="folder-open" class="icon-md"></i>
+            </div>
+            <div class="card-content">
+              <h3>Open Folder as Vault</h3>
+              <p>Choose an existing directory of Markdown files on your computer</p>
+              <div class="card-input-row">
+                <input type="text" id="existingVaultPathInput" placeholder="Enter or browse folder path..." />
+                <button id="btnBrowseExistingFolder" class="btn btn-secondary">Browse...</button>
+              </div>
+            </div>
+            <button id="btnOpenExistingVault" class="btn btn-secondary">Open Folder</button>
+          </div>
+
+          <!-- Card 3: Create New Vault -->
+          <div class="vault-choice-card" id="cardCreateVault">
+            <div class="card-icon-box">
+              <i data-lucide="folder-plus" class="icon-md"></i>
+            </div>
+            <div class="card-content">
+              <h3>Create New Vault</h3>
+              <p>Create a brand new empty vault in a custom directory</p>
+              <div class="card-input-row" style="margin-bottom: 6px;">
+                <input type="text" id="newVaultNameInput" placeholder="Vault Name (e.g. My Notes)" value="My Notes" />
+              </div>
+              <div class="card-input-row">
+                <input type="text" id="newVaultLocationInput" placeholder="Parent folder location..." />
+                <button id="btnBrowseNewLocation" class="btn btn-secondary">Browse...</button>
+              </div>
+            </div>
+            <button id="btnCreateNewVault" class="btn btn-secondary">Create</button>
+          </div>
+        </div>
+        <div class="vault-chooser-footer">
+          <button id="btnSkipVaultChooser" class="btn btn-ghost" style="display:none">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Generic Prompt Modal (e.g. New Note / Folder / Rename) -->
+    <div class="modal-backdrop" id="promptModal" style="display:none">
+      <div class="modal-card prompt-modal">
+        <h3 id="promptTitle">Create Note</h3>
+        <p id="promptMessage" class="prompt-msg"></p>
+        <input type="text" id="promptInput" class="prompt-input" />
+        <div class="modal-buttons">
+          <button id="promptCancelBtn" class="btn btn-secondary">Cancel</button>
+          <button id="promptConfirmBtn" class="btn btn-primary">Confirm</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Context Menu -->
+    <div id="contextMenu" class="context-menu" style="display:none">
+      <div class="context-item" id="ctxRename"><i data-lucide="edit-2" class="icon-xs"></i> Rename</div>
+      <div class="context-item" id="ctxDuplicate"><i data-lucide="copy" class="icon-xs"></i> Duplicate</div>
+      <div class="context-item" id="ctxOpenInOS"><i data-lucide="folder-open" class="icon-xs"></i> Show in Explorer</div>
+      <div class="context-item" id="ctxRecovery"><i data-lucide="history" class="icon-xs"></i> Version History</div>
+      <div class="context-divider"></div>
+      <div class="context-item text-danger" id="ctxDelete"><i data-lucide="trash-2" class="icon-xs"></i> Delete</div>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>
